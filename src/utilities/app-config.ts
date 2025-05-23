@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { AppConfig } from "../interfaces";
+import { IAppConfig } from "../interfaces";
 dotenv.config();
 
 function requireEnv(name: string): string {
@@ -19,7 +19,7 @@ function requireNumberEnv(name: string): number {
   return num;
 }
 
-export const appConfig: AppConfig = {
+export const appConfig: IAppConfig = {
   minBetAmount: requireNumberEnv("MIN_BET_AMOUNT"),
   maxBetAmount: requireNumberEnv("MAX_BET_AMOUNT"),
   maxCashoutAmount: requireNumberEnv("MAX_CASHOUT"),

@@ -1,5 +1,3 @@
-import { BetResult } from '../interfaces';
-import { appConfig } from './app-config';
 import { createLogger } from './logger';
 import { Socket } from 'socket.io';
 
@@ -26,22 +24,4 @@ export const getUserIP = (socket: any): string => {
         if (ip) return ip;
     }
     return socket.handshake.address || '';
-};
-
-
-export const getBetResult = (betAmount: number, chip: number, result: number): BetResult => {
-    const resultData: BetResult = {
-        chip,
-        betAmount,
-        winAmount: 0,
-        mult: 1.98,
-        status: 'loss'
-    };
-
-    if (chip == result) {
-        resultData.status = 'win';
-        resultData.winAmount = Math.min(betAmount * resultData.mult, appConfig.maxCashoutAmount);
-    }
-
-    return resultData;
 };

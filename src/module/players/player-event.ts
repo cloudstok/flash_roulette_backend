@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { FinalUserData, RawUserData } from '../../interfaces';
+import { IFinalUserData, IRawUserData } from '../../interfaces';
 
 function getImageValue(id: string): number {
   let sum = 0;
@@ -12,7 +12,7 @@ function getImageValue(id: string): number {
 export const getUserDataFromSource = async (
   token: string,
   game_id: string
-): Promise<FinalUserData | false | undefined> => {
+): Promise<IFinalUserData | false | undefined> => {
   try {
     const response = await axios.get(`${process.env.service_base_url}/service/user/detail`, {
       headers: {
@@ -20,7 +20,7 @@ export const getUserDataFromSource = async (
       },
     });
 
-    const userData: RawUserData | undefined = response?.data?.user;
+    const userData: IRawUserData | undefined = response?.data?.user;
 
     if (userData) {
       const userId = encodeURIComponent(userData.user_id);
@@ -28,7 +28,7 @@ export const getUserDataFromSource = async (
       const id = `${operatorId}:${userId}`;
       const image = getImageValue(id);
 
-      const finalData: FinalUserData = {
+      const finalData: IFinalUserData = {
         ...userData,
         userId,
         id,

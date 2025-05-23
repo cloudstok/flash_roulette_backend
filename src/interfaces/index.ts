@@ -1,12 +1,12 @@
-export type BetResult = {
-    chip: number;
+export interface IBetResult {
+    chip: string;
     betAmount: number;
     winAmount: number;
     mult: number;
     status: 'win' | 'loss';
 };
 
-export interface LobbyData {
+export interface ILobbyData {
     lobbyId: number;
     start_delay: number;
     end_delay: number;
@@ -14,14 +14,14 @@ export interface LobbyData {
     time?: Date;
 };
 
-export interface RawUserData {
+export interface IRawUserData {
     user_id: string;
     operatorId: string;
     balance: number;
     [key: string]: any;
 };
 
-export interface FinalUserData extends RawUserData {
+export interface IFinalUserData extends IRawUserData {
     userId: string;
     id: string;
     game_id: string;
@@ -29,44 +29,45 @@ export interface FinalUserData extends RawUserData {
     image: number;
 };
 
-export interface UserBet {
+export interface IUserBet {
     betAmount: number;
     chip: number;
 }
 
-export interface BetData {
+export interface IBetData {
     bet_id: string;
     totalBetAmount: number;
-    userBets: UserBet[];
+    userBets: IUserBet[];
 };
 
-export interface SingleBetData {
+export interface ISingleBetData {
     betAmount: number;
     chip: number;
 };
 
-export interface BetObject {
+export interface IBetObject {
     bet_id: string;
+    user_id: string;
     token: string;
     socket_id: string;
     game_id: string;
     bet_amount?: number;
-    userBets?: SingleBetData[];
-    lobby_id: number;
+    userBets?: ISingleBetData[];
+    lobby_id?: number;
     txn_id?: string;
     ip?: string
 };
 
-export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
+export type TLogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 
-export interface LogEntry {
+export interface ILogEntry {
     time: number;
-    level: LogLevel;
+    level: TLogLevel;
     name: string;
     msg: string;
 };
 
-interface DBConfig {
+export interface IDBConfig {
     host: string;
     user: string;
     password: string;
@@ -76,31 +77,31 @@ interface DBConfig {
     interval: string;
 };
 
-interface RedisConfig {
+export interface IRedisConfig {
     host: string;
     port: number;
     retry: number;
     interval: number;
 };
 
-export interface AppConfig {
+export interface IAppConfig {
     minBetAmount: number;
     maxBetAmount: number;
     maxCashoutAmount: number;
-    dbConfig: DBConfig;
-    redis: RedisConfig;
+    dbConfig: IDBConfig;
+    redis: IRedisConfig;
 };
 
-export type WebhookKey = 'CREDIT' | 'DEBIT';
+export type TWebhookKey = 'CREDIT' | 'DEBIT';
 
 
-export interface PlayerDetails {
+export interface IPlayerDetails {
     game_id: string;
     operatorId: string;
     token: string
 };
 
-export interface BetsData {
+export interface IBetsData {
     id: number;
     bet_amount?: number | string;
     winning_amount?: number | string;
@@ -111,13 +112,13 @@ export interface BetsData {
     ip?: string;
 };
 
-export interface AccountsResult {
+export interface IAccountsResult {
     txn_id?: string;
     status: boolean;
-    type: WebhookKey
+    type: TWebhookKey
 };
 
-export interface WebhookData {
+export interface IWebhookData {
     txn_id: string;
     ip?: string;
     game_id: string | undefined;
@@ -129,7 +130,7 @@ export interface WebhookData {
     txn_ref_id?: string;
 };
 
-export interface ReqData {
+export interface IReqData {
     chip: string;
     btAmt: number;
 }

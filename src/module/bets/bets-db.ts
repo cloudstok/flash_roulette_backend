@@ -1,4 +1,4 @@
-import { BetData, Settlement } from '../../interfaces';
+import { IBetData, } from '../../interfaces';
 import { write } from '../../utilities/db-connection';
 
 const SQL_INSERT_BETS = 'INSERT INTO bets (bet_id, lobby_id, user_id, operator_id, bet_amount, userBets) VALUES(?,?,?,?,?,?)';
@@ -38,7 +38,7 @@ export const addSettleBet = async (settlements: Settlement[]): Promise<void> => 
   }
 };
 
-export const insertBets = async (data: BetData): Promise<void> => {
+export const insertBets = async (data: IBetData): Promise<void> => {
   try {
     const { bet_id, totalBetAmount, userBets } = data;
     const [initial, lobby_id, user_id, operator_id] = bet_id.split(':');
