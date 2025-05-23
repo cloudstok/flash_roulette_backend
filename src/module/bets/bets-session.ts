@@ -7,6 +7,7 @@ import { Socket } from 'socket.io';
 import { IBetObject, IBetResult, IPlayerDetails, IReqData } from '../../interfaces';
 import { randomUUID } from 'crypto';
 import { waitForDebugger } from 'inspector';
+import { addSettlement } from './bets-db';
 const logger = createLogger('Bets', 'jsonl');
 
 export const placeBet = async (socket: Socket, betData: IReqData[]) => {
@@ -35,9 +36,9 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
             return socket.emit("ERROR", "Not enough balance to place this bet");
         }
 
-        const betId = randomUUID();
+        const matchId = randomUUID();
         const debitObj: IBetObject = {
-            bet_id: betId,
+            bet_id: matchId,
             bet_amount: totalBetAmount,
             game_id: game_id,
             user_id: userId,
@@ -68,10 +69,8 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
             }, 1500);
         }
 
+        await addSettlement({ lobby_id: matchId, user_id: userId, operator_id: operatorId, bet_amount: totalBetAmount, win_amount: totalWinAmount, user_bets: betResults, win_pos: resPos })
         socket.emit("bet_result", { totalBetAmount, totalWinAmount, winPosition: resPos, betResults })
-
-
-
 
         return
 

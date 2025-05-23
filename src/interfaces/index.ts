@@ -58,6 +58,16 @@ export interface IBetObject {
     ip?: string
 };
 
+export interface ISettlementDbObject {
+    lobby_id: string
+    user_id: string
+    operator_id: string
+    bet_amount: number
+    win_amount: number
+    user_bets: IBetResult[]
+    win_pos: number
+}
+
 export type TLogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 
 export interface ILogEntry {
