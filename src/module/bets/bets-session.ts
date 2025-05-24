@@ -66,14 +66,16 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
                 socket.emit("info", parsedPlayerDetails);
             }, 1500);
         }
-
-        await addSettlement({ lobby_id: matchId, user_id: userId, operator_id: operatorId, bet_amount: totalBetAmount, win_amount: totalWinAmount, user_bets: betResults, win_pos: resPos })
+        const stmtObj = { lobby_id: matchId, user_id: userId, operator_id: operatorId, bet_amount: totalBetAmount, win_amount: totalWinAmount, user_bets: betResults, win_pos: resPos }
+        logger.info(stmtObj)
+        await addSettlement(stmtObj)
         socket.emit("bet_result", { totalBetAmount, totalWinAmount, winPosition: resPos, betResults })
 
         return
 
     } catch (error: any) {
-        console.error("error occured:", error);
+        logger.error({ error: error.message })
+        console.error("error occured:", error.message);
     }
 };
 
