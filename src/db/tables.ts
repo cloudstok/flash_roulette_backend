@@ -7,5 +7,5 @@ export const settlement = `CREATE TABLE IF NOT EXISTS settlement (
    win_amount decimal(10, 2) DEFAULT 0.00,
    user_bets json,
    win_pos smallint,
-   created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+   created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP
  );`

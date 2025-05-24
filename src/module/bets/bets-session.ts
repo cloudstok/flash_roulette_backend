@@ -61,7 +61,7 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
             if (!cdtTxn) console.error("Credit Txn Failed", JSON.stringify(debitObj));
 
             parsedPlayerDetails.balance += totalWinAmount;
-            await setCache(infoKey, parsedPlayerDetails);
+            await setCache(infoKey, JSON.stringify(parsedPlayerDetails));
             setTimeout(() => {
                 socket.emit("info", parsedPlayerDetails);
             }, 1500);
@@ -73,7 +73,7 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
         return
 
     } catch (error: any) {
-        console.error("error occured:", error.message);
+        console.error("error occured:", error);
     }
 };
 
@@ -107,6 +107,14 @@ const isWinner = (betData: IReqData[], resultPosition: number): { status: "WIN" 
                 winAmount: winAmt,
                 status: "win",
                 mult: EPayouts[`${bet.chip}`]
+            })
+        } else {
+            betResults.push({
+                chip: bet.chip,
+                betAmount: bet.btAmt,
+                winAmount: 0,
+                status: "loss",
+                mult: 0
             })
         }
     })

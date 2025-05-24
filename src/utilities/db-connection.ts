@@ -84,7 +84,7 @@ export const createTables = async () => {
     try {
         if (!pool) throw new Error('Database pool is not initialized');
         const connection: PoolConnection = await pool.getConnection();
-        await Promise.allSettled([connection.execute(settlement)]);
+        await connection.execute(settlement);
         logger.info(`Tables creation queries executed`)
     } catch (error) {
         console.error("Error creating tables", error);
