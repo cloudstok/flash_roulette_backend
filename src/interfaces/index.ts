@@ -112,9 +112,9 @@ export interface IPlayerDetails {
 };
 
 export interface IBetsData {
-    id: number;
-    bet_amount?: number | string;
-    winning_amount?: number | string;
+    id: string;
+    bet_amount: number;
+    winning_amount?: number;
     game_id?: string;
     user_id: string;
     bet_id?: string;

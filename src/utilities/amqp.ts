@@ -1,6 +1,8 @@
 import amqp, { Channel, Options } from "amqplib";
 import { createLogger } from "../utilities/logger";
+import { config } from "dotenv";
 
+config({ path: ".env" })
 const rabbitMQLogger = createLogger("Queue");
 
 let pubChannel: Channel | null = null;

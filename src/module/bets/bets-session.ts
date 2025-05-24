@@ -4,9 +4,8 @@ import { setCache, getCache } from '../../utilities/redis-connection';
 import { getUserIP, logEventAndEmitResponse } from '../../utilities/helper-function';
 import { createLogger } from '../../utilities/logger';
 import { Socket } from 'socket.io';
-import { IBetObject, IBetResult, IPlayerDetails, IReqData } from '../../interfaces';
+import { IBetResult, IBetsData, IPlayerDetails, IReqData } from '../../interfaces';
 import { randomUUID } from 'crypto';
-import { waitForDebugger } from 'inspector';
 import { addSettlement } from './bets-db';
 const logger = createLogger('Bets', 'jsonl');
 
@@ -37,14 +36,13 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
         }
 
         const matchId = randomUUID();
-        const debitObj: IBetObject = {
+        const debitObj: IBetsData = {
             bet_id: matchId,
             bet_amount: totalBetAmount,
             game_id: game_id,
             user_id: userId,
             ip: getUserIP(socket),
-            token: token,
-            socket_id: socket.id,
+            id: matchId
         };
 
         const playerDetailsForTxn: IPlayerDetails = { game_id, operatorId, token };
