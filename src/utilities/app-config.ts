@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import { IAppConfig } from "../interfaces";
-dotenv.config();
+dotenv.config({ path: ".env" });
 
 function requireEnv(name: string): string {
   const value = process.env[name];

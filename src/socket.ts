@@ -2,8 +2,6 @@ import { Server, Socket } from 'socket.io';
 import { getUserDataFromSource } from './module/players/player-event';
 import { eventRouter } from './router/event-router';
 import { setCache, deleteCache } from './utilities/redis-connection';
-//import { getMatchHistory } from './module/bets/bets-session';
-
 
 export const initSocket = (io: Server): void => {
 
@@ -25,7 +23,7 @@ export const initSocket = (io: Server): void => {
       return;
     }
 
-
+    userData.balance = Number(userData.balance);
     socket.emit('info',
       {
         user_id: userData.userId,

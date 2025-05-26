@@ -4,9 +4,8 @@ import { setCache, getCache } from '../../utilities/redis-connection';
 import { getUserIP, logEventAndEmitResponse } from '../../utilities/helper-function';
 import { createLogger } from '../../utilities/logger';
 import { Socket } from 'socket.io';
-import { IBetObject, IBetResult, IPlayerDetails, IReqData } from '../../interfaces';
+import { IBetResult, IBetsData, IPlayerDetails, IReqData } from '../../interfaces';
 import { randomUUID } from 'crypto';
-import { waitForDebugger } from 'inspector';
 import { addSettlement } from './bets-db';
 const logger = createLogger('Bets', 'jsonl');
 
@@ -37,14 +36,13 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
         }
 
         const matchId = randomUUID();
-        const debitObj: IBetObject = {
+        const debitObj: IBetsData = {
             bet_id: matchId,
             bet_amount: totalBetAmount,
             game_id: game_id,
             user_id: userId,
             ip: getUserIP(socket),
-            token: token,
-            socket_id: socket.id,
+            id: matchId
         };
 
         const playerDetailsForTxn: IPlayerDetails = { game_id, operatorId, token };
@@ -63,18 +61,20 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
             if (!cdtTxn) console.error("Credit Txn Failed", JSON.stringify(debitObj));
 
             parsedPlayerDetails.balance += totalWinAmount;
-            await setCache(infoKey, parsedPlayerDetails);
+            await setCache(infoKey, JSON.stringify(parsedPlayerDetails));
             setTimeout(() => {
                 socket.emit("info", parsedPlayerDetails);
             }, 1500);
         }
-
-        await addSettlement({ lobby_id: matchId, user_id: userId, operator_id: operatorId, bet_amount: totalBetAmount, win_amount: totalWinAmount, user_bets: betResults, win_pos: resPos })
+        const stmtObj = { lobby_id: matchId, user_id: userId, operator_id: operatorId, bet_amount: totalBetAmount, win_amount: totalWinAmount, user_bets: betResults, win_pos: resPos }
+        logger.info(stmtObj)
+        await addSettlement(stmtObj)
         socket.emit("bet_result", { totalBetAmount, totalWinAmount, winPosition: resPos, betResults })
 
         return
 
     } catch (error: any) {
+        logger.error({ error: error.message })
         console.error("error occured:", error.message);
     }
 };
@@ -109,6 +109,14 @@ const isWinner = (betData: IReqData[], resultPosition: number): { status: "WIN" 
                 winAmount: winAmt,
                 status: "win",
                 mult: EPayouts[`${bet.chip}`]
+            })
+        } else {
+            betResults.push({
+                chip: bet.chip,
+                betAmount: bet.btAmt,
+                winAmount: 0,
+                status: "loss",
+                mult: 0
             })
         }
     })

@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 import crypto from 'crypto';
 import { sendToQueue } from './amqp';
 import { createLogger } from './logger';
-import { AccountsResult, BetsData, PlayerDetails, WebhookData, WebhookKey } from '../interfaces';
+import { IAccountsResult, IBetsData, IPlayerDetails, IWebhookData, TWebhookKey } from '../interfaces';
 const thirdPartyLogger = createLogger('ThirdPartyRequest', 'jsonl');
 const failedThirdPartyLogger = createLogger('FailedThirdPartyRequest', 'jsonl');
 
@@ -21,87 +21,120 @@ export const generateUUIDv7 = (): string => {
     return uuid.join('-');
 }
 
-
-
-export const updateBalanceFromAccount = async (data: BetsData, key: WebhookKey, playerDetails: PlayerDetails): Promise<AccountsResult> => {
+export const updateBalanceFromAccount = async (
+    data: IBetsData,
+    key: "CREDIT" | "DEBIT",
+    playerDetails: IPlayerDetails
+): Promise<boolean | IBetsData> => {
     try {
-        const webhookData = await prepareDataForWebhook({ ...data, game_id: playerDetails.game_id }, key);
-        if (!webhookData) return { status: false, type: key };
+        const webhookData = await prepareDataForWebhook(
+            { ...data, game_id: playerDetails.game_id },
+            key
+        );
+        if (!webhookData) return false;
 
-        if (key === 'CREDIT') {
-            await sendToQueue('', 'games_cashout', JSON.stringify({ ...webhookData, operatorId: playerDetails.operatorId, token: playerDetails.token }));
-            return { status: true, type: key };
-        };
+        if (key === "CREDIT") {
+            thirdPartyLogger.info(
+                JSON.stringify({ logId: generateUUIDv7(), webhookData, playerDetails })
+            );
+            await sendToQueue(
+                "",
+                "games_cashout",
+                JSON.stringify({
+                    ...webhookData,
+                    operatorId: playerDetails.operatorId,
+                    token: playerDetails.token,
+                })
+            );
+            return true;
+        }
 
         data.txn_id = webhookData.txn_id;
-        const sendRequest = await sendRequestToAccounts(webhookData, playerDetails.token);
-        if (!sendRequest) return { status: false, type: key };
-
-        return { status: true, type: key, txn_id: data.txn_id };
+        const sendRequest = await sendRequestToAccounts(
+            webhookData,
+            playerDetails.token
+        );
+        if (!sendRequest) return false;
+        return data;
     } catch (err) {
-        console.error(`Err while updating Player's balance is`, err);
-        return { status: true, type: key };
-    }
-}
-
-export const sendRequestToAccounts = async (webhookData: WebhookData, token: string): Promise<Boolean> => {
-    try {
-        const url = process.env.service_base_url;
-        if (!url) throw new Error('Service base URL is not defined');
-
-        let clientServerOptions: AxiosRequestConfig = {
-            method: 'POST',
-            url: `${url}/service/operator/user/balance/v2`,
-            headers: {
-                token
-            },
-            data: webhookData,
-            timeout: 1000 * 5
-        };
-
-        const data = (await axios(clientServerOptions))?.data;
-        thirdPartyLogger.info(JSON.stringify({ logId: generateUUIDv7(), req: clientServerOptions, res: data }));
-
-        if (!data.status) return false;
-
-        return true;
-    } catch (err: any) {
-        console.error(`Err while sending request to accounts is:::`, err?.response?.data);
-        failedThirdPartyLogger.error(JSON.stringify({ logId: generateUUIDv7(), req: { webhookData, token }, res: err?.response?.status }));
+        console.error(`Err while updating Player's balance:`, err);
         return false;
     }
-}
+};
 
-
-export const prepareDataForWebhook = async (betObj: BetsData, key: WebhookKey): Promise<WebhookData | false> => {
+export const sendRequestToAccounts = async (
+    webhookData: IWebhookData,
+    token: string
+): Promise<boolean> => {
     try {
-        let { id, bet_amount, winning_amount, game_id, user_id, txn_id, ip, bet_id } = betObj;
+        const url = process.env.service_base_url;
+        if (!url) throw new Error("Service base URL is not defined");
 
-        const amountFormatted = Number(bet_amount).toFixed(2);
-        let baseData: WebhookData = {
+        const clientServerOptions = {
+            method: "POST",
+            url: `${url}/service/operator/user/balance/v2`,
+            headers: { token },
+            data: webhookData,
+            timeout: 5000,
+        };
+
+        const response = await axios(clientServerOptions);
+        const responseData = response?.data;
+
+        thirdPartyLogger.info(
+            JSON.stringify({
+                logId: generateUUIDv7(),
+                req: clientServerOptions,
+                res: responseData,
+            })
+        );
+        return responseData?.status ?? false;
+    } catch (err: any) {
+        console.error(`Err while sending request to accounts:`, err?.message);
+        failedThirdPartyLogger.error(
+            JSON.stringify({
+                logId: generateUUIDv7(),
+                req: { webhookData, token },
+                res: err?.response?.status,
+            })
+        );
+        return false;
+    }
+};
+
+export const prepareDataForWebhook = async (
+    betObj: IBetsData,
+    key: "CREDIT" | "DEBIT"
+): Promise<IWebhookData | false> => {
+    try {
+        const { id, bet_amount, winning_amount, game_id, user_id, txn_id, ip } =
+            betObj;
+        const obj: IWebhookData = {
             txn_id: generateUUIDv7(),
             ip,
             game_id,
-            user_id: decodeURIComponent(user_id)
+            user_id: decodeURIComponent(user_id),
         };
 
-        if (key == 'DEBIT') return {
-            ...baseData,
-            amount: amountFormatted,
-            description: `${Number(bet_amount).toFixed(2)} debited for Flash Roulette game for Round ${id}`,
-            bet_id,
-            txn_type: 0
+        switch (key) {
+            case "DEBIT":
+                obj.amount = bet_amount;
+                obj.description = `${bet_amount.toFixed(2)} debited for ${process.env.GAME_NAME
+                    } game for Round ${id}`;
+                obj.bet_id = id.toString();
+                obj.txn_type = 0;
+                break;
+            case "CREDIT":
+                obj.amount = winning_amount;
+                obj.txn_ref_id = txn_id;
+                obj.description = `${winning_amount?.toFixed(2)} credited for ${process.env.GAME_NAME
+                    } game for Round ${id}`;
+                obj.txn_type = 1;
+                break;
         }
-        else if (key == 'CREDIT') return {
-            ...baseData,
-            amount: winning_amount,
-            txn_ref_id: txn_id,
-            description: `${winning_amount} credited for Flash Roulette game for Round ${id}`,
-            txn_type: 1
-        }
-        else return baseData;
+        return obj;
     } catch (err) {
-        console.error(`[ERR] while trying to prepare data for webhook is::`, err);
+        console.error(`[ERR] while preparing data for webhook:`, err);
         return false;
     }
 };

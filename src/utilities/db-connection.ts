@@ -4,7 +4,7 @@ dotenv.config();
 
 import { createLogger } from './logger';
 import { appConfig } from './app-config';
-import { bets, lobbies, settlement } from '../db/tables';
+import { settlement } from '../db/tables';
 
 const logger = createLogger('Database');
 
@@ -84,7 +84,7 @@ export const createTables = async () => {
     try {
         if (!pool) throw new Error('Database pool is not initialized');
         const connection: PoolConnection = await pool.getConnection();
-        await Promise.allSettled([connection.execute(lobbies), connection.execute(bets), connection.execute(settlement)]);
+        await connection.execute(settlement);
         logger.info(`Tables creation queries executed`)
     } catch (error) {
         console.error("Error creating tables", error);

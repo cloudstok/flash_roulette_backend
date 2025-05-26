@@ -1,9 +1,9 @@
 import fs, { WriteStream } from 'fs';
 import path from 'path';
 import pino, { LoggerOptions, Logger, Level } from 'pino';
-import { LogEntry, LogLevel } from '../interfaces';
+import { ILogEntry, TLogLevel } from '../interfaces';
 
-const colors: Record<LogLevel | 'reset', string> = {
+const colors: Record<TLogLevel | 'reset', string> = {
   trace: '\x1b[37m',
   debug: '\x1b[36m',
   info: '\x1b[32m',
@@ -13,7 +13,7 @@ const colors: Record<LogLevel | 'reset', string> = {
   reset: '\x1b[0m',
 };
 
-function prettyPrint(log: LogEntry): string {
+function prettyPrint(log: ILogEntry): string {
   const timestamp = new Date(log.time).toISOString();
   const color = colors[log.level] || colors.info;
   return `${timestamp} ${color}[${log.name}] ${log.level}: ${log.msg}${colors.reset}`;
@@ -22,7 +22,7 @@ function prettyPrint(log: LogEntry): string {
 const prettyStream = {
   write: (chunk: string): void => {
     try {
-      const log: LogEntry = JSON.parse(chunk);
+      const log: ILogEntry = JSON.parse(chunk);
       console.log(prettyPrint(log));
     } catch (err) {
       console.error('[LOGGER ERROR] Failed to parse log:', err);
