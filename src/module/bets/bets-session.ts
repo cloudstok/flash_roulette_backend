@@ -25,14 +25,14 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
         if (invalidBetPayload) logEventAndEmitResponse(socket, betData, "Invalid Bet Payload", "bet")
 
         if (totalBetAmount > appConfig.maxBetAmount || totalBetAmount < appConfig.minBetAmount) {
-            return socket.emit("ERROR", "Bet amount out of range");
+            return socket.emit("error", "Bet amount out of range");
         }
 
         if (balance < totalBetAmount) {
-            return socket.emit("ERROR", "Not enough balance to place this bet");
+            return socket.emit("error", "Not enough balance to place this bet");
         }
         if (balance - totalBetAmount < 0) {
-            return socket.emit("ERROR", "Not enough balance to place this bet");
+            return socket.emit("error", "Not enough balance to place this bet");
         }
 
         const matchId = randomUUID();
@@ -52,7 +52,9 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
 
         parsedPlayerDetails.balance -= totalBetAmount;
         await setCache(infoKey, JSON.stringify(parsedPlayerDetails));
-        socket.emit("INFO", parsedPlayerDetails);
+        socket.emit("bet_placed", { data: { matchId, totalBetAmount, balance: parsedPlayerDetails.balance }, msg: "BET PlACED SUCCESSFULLY" });
+        // console.log("Bet Placed", { matchId, totalBetAmount, balance: parsedPlayerDetails.balance });
+        socket.emit("info", parsedPlayerDetails);
 
         const resPos = Math.floor(Math.random() * 13);
         const { status, winAmt: totalWinAmount, betResults } = isWinner(betData, resPos)
