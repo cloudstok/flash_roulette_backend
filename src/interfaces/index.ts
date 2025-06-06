@@ -66,6 +66,7 @@ export interface ISettlementDbObject {
     win_amount: number
     user_bets: IBetResult[]
     win_pos: number
+    color: 'red' | 'black' | 'white' | ""
 }
 
 export type TLogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';

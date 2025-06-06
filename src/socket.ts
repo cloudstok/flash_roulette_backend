@@ -6,7 +6,6 @@ import { setCache, deleteCache } from './utilities/redis-connection';
 export const initSocket = (io: Server): void => {
 
   io.on('connection', async (socket: Socket) => {
-
     const { token, game_id } = socket.handshake.query as { token?: string; game_id?: string };
 
     if (!token || !game_id) {
@@ -34,7 +33,6 @@ export const initSocket = (io: Server): void => {
 
     await setCache(`PL:${socket.id}`, JSON.stringify({ ...userData, socketId: socket.id }), 3600);
 
-    //await getMatchHistory(socket, userData.userId, userData.operatorId);
     eventRouter(io, socket);
 
     socket.on('disconnect', async () => {
