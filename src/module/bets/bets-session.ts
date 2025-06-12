@@ -12,13 +12,12 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
     try {
         const infoKey = `PL:${socket.id}`
         const playerDetails = await getCache(infoKey);
-        console.log({ playerDetails, betData });
         if (!playerDetails) {
             return socket.emit('betError', { message: 'Invalid Player Details', status: false });
         }
 
         const parsedPlayerDetails = JSON.parse(playerDetails);
-        const { userId, operator_id, token, game_id, balance } = parsedPlayerDetails;
+        const { userId, operatorId, token, game_id, balance } = parsedPlayerDetails;
 
         const { invalidBetPayload, totalBetAmount } = betDataValidator(betData);
         if (invalidBetPayload) return logEventAndEmitResponse(socket, betData, "Invalid Bet Amount/Payload", "bet")
@@ -35,7 +34,7 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
             id: matchId
         };
 
-        const playerDetailsForTxn: IPlayerDetails = { game_id, operatorId: operator_id, token };
+        const playerDetailsForTxn: IPlayerDetails = { game_id, operatorId, token };
         const txnDbt: any = await updateBalanceFromAccount(debitObj, "DEBIT", playerDetailsForTxn);
         if (!txnDbt) return socket.emit("betError", "Bet Cancelled by Upstream");
         const debitTxnId = txnDbt.txn_id;
@@ -54,14 +53,14 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
 
         const resPos = Math.floor(Math.random() * 13);
         // const resPos = 0;
-        const { status, winAmt: totalWinAmount, betResults, color } = isWinner(betData, resPos)
+        const { status, winAmt, betResults, color } = isWinner(betData, resPos)
         if (status === "WIN") {
-            const cdtTxn = await updateBalanceFromAccount({ ...debitObj, winning_amount: totalBetAmount, txn_id: debitTxnId }, "CREDIT", playerDetailsForTxn);
+            const cdtTxn = await updateBalanceFromAccount({ ...debitObj, winning_amount: winAmt, txn_id: debitTxnId }, "CREDIT", playerDetailsForTxn);
             if (!cdtTxn) console.error("Credit Txn Failed", JSON.stringify(debitObj));
 
-            parsedPlayerDetails.balance += totalWinAmount;
+            parsedPlayerDetails.balance += winAmt;
             await setCache(infoKey, JSON.stringify(parsedPlayerDetails));
-            if (totalWinAmount) setTimeout(() => {
+            if (winAmt) setTimeout(() => {
                 socket.emit("info", {
                     name: parsedPlayerDetails.name,
                     user_id: userId,
@@ -71,10 +70,10 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
                 });
             }, 1500);
         }
-        const stmtObj = { lobby_id: matchId, user_id: userId, operator_id: parsedPlayerDetails.operatorId, bet_amount: totalBetAmount, win_amount: totalWinAmount, user_bets: betResults, win_pos: resPos, color }
+        const stmtObj = { lobby_id: matchId, user_id: userId, operator_id: parsedPlayerDetails.operatorId, bet_amount: totalBetAmount, win_amount: winAmt, user_bets: betResults, win_pos: resPos, color }
         logger.info(stmtObj)
         await addSettlement(stmtObj)
-        socket.emit("bet_result", { totalBetAmount, totalWinAmount, winPosition: resPos, betResults, color })
+        socket.emit("bet_result", { totalBetAmount, totalWinAmount: winAmt, winPosition: resPos, betResults, color })
 
         return
     } catch (error: any) {
