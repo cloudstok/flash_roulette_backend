@@ -141,21 +141,30 @@ const isWinner = (betData: IReqData[], resultPosition: number): { status: "WIN" 
     else return { status: "LOSS", winAmt: totalWinAmount, betResults, color }
 }
 
+/*Pay table to simplified:
+Red, Black, Odd & Even : 2x
+Half Dozen : 2x
+Column: 3x
+Corner, Four: 3x
+Street, Three: 4x
+Split: 6x
+Straight Up: 12x */
+
 export const EPayouts: Record<string, { mult: number, min_bet: number, max_bet: number }> = {
-    "0-2-4-6-8-10-12": { mult: 1, min_bet: 20, max_bet: 50000 },  // Even numbers payout
-    "1-3-5-7-9-11": { mult: 1, min_bet: 20, max_bet: 50000 },  // Odd numbers payout
-    "1-3-5-8-10-12": { mult: 1, min_bet: 20, max_bet: 50000 }, // red numbers payout
-    "2-4-6-7-9-11": { mult: 1, min_bet: 20, max_bet: 50000 },  // black numbers payout
-    "3-6-9-12": { mult: 2, min_bet: 20, max_bet: 25000 },  // row payouts
-    "2-5-8-11": { mult: 2, min_bet: 20, max_bet: 25000 },  // row payouts
-    "1-4-7-10": { mult: 2, min_bet: 20, max_bet: 25000 },  // row payouts
-    "1-2-3-4-5-6": { mult: 1, min_bet: 20, max_bet: 25000 },   // 1-6 payout
-    "4-5-6-7-8-9": { mult: 1, min_bet: 20, max_bet: 25000 },   // 4-9 payout
-    "7-8-9-10-11-12": { mult: 1, min_bet: 20, max_bet: 25000 },  // 7-12 payout
-    "1-2-3": { mult: 3, min_bet: 20, max_bet: 25000 },   // 1st column payout
-    "4-5-6": { mult: 3, min_bet: 20, max_bet: 25000 },   // 2nd column payout
-    "7-8-9": { mult: 3, min_bet: 20, max_bet: 25000 },   // 3rd column payout
-    "10-11-12": { mult: 3, min_bet: 20, max_bet: 25000 },  // 4th column payout
+    "0-2-4-6-8-10-12": { mult: 2, min_bet: 20, max_bet: 50000 },  // Even numbers payout
+    "1-3-5-7-9-11": { mult: 2, min_bet: 20, max_bet: 50000 },  // Odd numbers payout
+    "1-3-5-8-10-12": { mult: 2, min_bet: 20, max_bet: 50000 }, // red numbers payout
+    "2-4-6-7-9-11": { mult: 2, min_bet: 20, max_bet: 50000 },  // black numbers payout
+    "3-6-9-12": { mult: 3, min_bet: 20, max_bet: 25000 },  // row payouts
+    "2-5-8-11": { mult: 3, min_bet: 20, max_bet: 25000 },  // row payouts
+    "1-4-7-10": { mult: 3, min_bet: 20, max_bet: 25000 },  // row payouts
+    "1-2-3-4-5-6": { mult: 2, min_bet: 20, max_bet: 25000 },   // 1-6 payout
+    "4-5-6-7-8-9": { mult: 2, min_bet: 20, max_bet: 25000 },   // 4-9 payout
+    "7-8-9-10-11-12": { mult: 2, min_bet: 20, max_bet: 25000 },  // 7-12 payout
+    "1-2-3": { mult: 4, min_bet: 20, max_bet: 25000 },   // 1st column payout
+    "4-5-6": { mult: 4, min_bet: 20, max_bet: 25000 },   // 2nd column payout
+    "7-8-9": { mult: 4, min_bet: 20, max_bet: 25000 },   // 3rd column payout
+    "10-11-12": { mult: 4, min_bet: 20, max_bet: 25000 },  // 4th column payout
     "1-2-4-5": { mult: 3, min_bet: 20, max_bet: 25000 },
     "2-3-5-6": { mult: 3, min_bet: 20, max_bet: 25000 },
     "4-5-7-8": { mult: 3, min_bet: 20, max_bet: 25000 },
@@ -163,35 +172,35 @@ export const EPayouts: Record<string, { mult: number, min_bet: number, max_bet: 
     "7-8-10-11": { mult: 3, min_bet: 20, max_bet: 25000 },
     "8-9-11-12": { mult: 3, min_bet: 20, max_bet: 25000 },
     // duo number payouts
-    "1-2": { mult: 5, min_bet: 20, max_bet: 25000 },
-    "2-3": { mult: 5, min_bet: 20, max_bet: 25000 },
-    "4-5": { mult: 5, min_bet: 20, max_bet: 25000 },
-    "5-6": { mult: 5, min_bet: 20, max_bet: 25000 },
-    "7-8": { mult: 5, min_bet: 20, max_bet: 25000 },
-    "8-9": { mult: 5, min_bet: 20, max_bet: 25000 },
-    "10-11": { mult: 5, min_bet: 20, max_bet: 25000 },
-    "11-12": { mult: 5, min_bet: 20, max_bet: 25000 },
-    "1-4": { mult: 5, min_bet: 20, max_bet: 25000 },
-    "2-5": { mult: 5, min_bet: 20, max_bet: 25000 },
-    "3-6": { mult: 5, min_bet: 20, max_bet: 25000 },
-    "4-7": { mult: 5, min_bet: 20, max_bet: 25000 },
-    "5-8": { mult: 5, min_bet: 20, max_bet: 25000 },
-    "6-9": { mult: 5, min_bet: 20, max_bet: 25000 },
-    "7-10": { mult: 5, min_bet: 20, max_bet: 25000 },
-    "8-11": { mult: 5, min_bet: 20, max_bet: 25000 },
-    "9-12": { mult: 5, min_bet: 20, max_bet: 25000 },
+    "1-2": { mult: 6, min_bet: 20, max_bet: 25000 },
+    "2-3": { mult: 6, min_bet: 20, max_bet: 25000 },
+    "4-5": { mult: 6, min_bet: 20, max_bet: 25000 },
+    "5-6": { mult: 6, min_bet: 20, max_bet: 25000 },
+    "7-8": { mult: 6, min_bet: 20, max_bet: 25000 },
+    "8-9": { mult: 6, min_bet: 20, max_bet: 25000 },
+    "10-11": { mult: 6, min_bet: 20, max_bet: 25000 },
+    "11-12": { mult: 6, min_bet: 20, max_bet: 25000 },
+    "1-4": { mult: 6, min_bet: 20, max_bet: 25000 },
+    "2-5": { mult: 6, min_bet: 20, max_bet: 25000 },
+    "3-6": { mult: 6, min_bet: 20, max_bet: 25000 },
+    "4-7": { mult: 6, min_bet: 20, max_bet: 25000 },
+    "5-8": { mult: 6, min_bet: 20, max_bet: 25000 },
+    "6-9": { mult: 6, min_bet: 20, max_bet: 25000 },
+    "7-10": { mult: 6, min_bet: 20, max_bet: 25000 },
+    "8-11": { mult: 6, min_bet: 20, max_bet: 25000 },
+    "9-12": { mult: 6, min_bet: 20, max_bet: 25000 },
     // single number payouts
-    "0": { mult: 11, min_bet: 20, max_bet: 25000 },
-    "1": { mult: 11, min_bet: 20, max_bet: 25000 },
-    "2": { mult: 11, min_bet: 20, max_bet: 25000 },
-    "3": { mult: 11, min_bet: 20, max_bet: 25000 },
-    "4": { mult: 11, min_bet: 20, max_bet: 25000 },
-    "5": { mult: 11, min_bet: 20, max_bet: 25000 },
-    "6": { mult: 11, min_bet: 20, max_bet: 25000 },
-    "7": { mult: 11, min_bet: 20, max_bet: 25000 },
-    "8": { mult: 11, min_bet: 20, max_bet: 25000 },
-    "9": { mult: 11, min_bet: 20, max_bet: 25000 },
-    "10": { mult: 11, min_bet: 20, max_bet: 25000 },
-    "11": { mult: 11, min_bet: 20, max_bet: 25000 },
-    "12": { mult: 11, min_bet: 20, max_bet: 25000 }
+    "0": { mult: 12, min_bet: 20, max_bet: 25000 },
+    "1": { mult: 12, min_bet: 20, max_bet: 25000 },
+    "2": { mult: 12, min_bet: 20, max_bet: 25000 },
+    "3": { mult: 12, min_bet: 20, max_bet: 25000 },
+    "4": { mult: 12, min_bet: 20, max_bet: 25000 },
+    "5": { mult: 12, min_bet: 20, max_bet: 25000 },
+    "6": { mult: 12, min_bet: 20, max_bet: 25000 },
+    "7": { mult: 12, min_bet: 20, max_bet: 25000 },
+    "8": { mult: 12, min_bet: 20, max_bet: 25000 },
+    "9": { mult: 12, min_bet: 20, max_bet: 25000 },
+    "10": { mult: 12, min_bet: 20, max_bet: 25000 },
+    "11": { mult: 12, min_bet: 20, max_bet: 25000 },
+    "12": { mult: 12, min_bet: 20, max_bet: 25000 }
 };  
