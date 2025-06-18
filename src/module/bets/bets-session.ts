@@ -36,7 +36,7 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
 
         const playerDetailsForTxn: IPlayerDetails = { game_id, operatorId, token };
         const txnDbt: any = await updateBalanceFromAccount(debitObj, "DEBIT", playerDetailsForTxn);
-        if (!txnDbt) return socket.emit("betError", "Bet Cancelled by Upstream");
+        if (!txnDbt) return socket.emit("betError", "Bet Cancelled By Upstream");
         const debitTxnId = txnDbt.txn_id;
 
         parsedPlayerDetails.balance -= totalBetAmount;
