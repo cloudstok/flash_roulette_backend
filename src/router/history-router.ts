@@ -59,13 +59,10 @@ apiRouter.get('/bet/detail', async (req: Request<{}, {}, {}, BetDetailQuery>, re
             user_id,
             operator_id,
             lobby_id,
-            bet_amount: record?.bet_amount ?? 0,
-            win_amount: record?.win_amount ?? 0,
             win_pos: record?.win_pos ?? 0,
-            created_at: record?.created_at ?? '',
+            time: record?.created_at ?? '',
             user_bets: record?.user_bets ?? [],
         };
-
         res.status(200).json({ status: true, data: finalData });
 
     } catch (err) {
