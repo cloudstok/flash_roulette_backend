@@ -56,18 +56,18 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
         const { status, winAmt, betResults, color } = isWinner(betData, resPos)
         if (status === "WIN") {
 
-        setTimeout(async() => {
-            const cdtTxn = await updateBalanceFromAccount({ ...debitObj, winning_amount: winAmt, txn_id: debitTxnId }, "CREDIT", playerDetailsForTxn);
-            if (!cdtTxn) console.error("Credit Txn Failed", JSON.stringify(debitObj));
-            parsedPlayerDetails.balance += winAmt;
-            await setCache(infoKey, JSON.stringify(parsedPlayerDetails));
-            socket.emit("info", {
-                name: parsedPlayerDetails.name,
-                user_id: userId,
-                balance: parsedPlayerDetails.balance,
-                game_id: parsedPlayerDetails.game_id,
-                operator_id: parsedPlayerDetails.operatorId
-             });
+            setTimeout(async () => {
+                const cdtTxn = await updateBalanceFromAccount({ ...debitObj, winning_amount: winAmt, txn_id: debitTxnId }, "CREDIT", playerDetailsForTxn);
+                if (!cdtTxn) console.error("Credit Txn Failed", JSON.stringify(debitObj));
+                parsedPlayerDetails.balance += winAmt;
+                await setCache(infoKey, JSON.stringify(parsedPlayerDetails));
+                socket.emit("info", {
+                    name: parsedPlayerDetails.name,
+                    user_id: userId,
+                    balance: parsedPlayerDetails.balance,
+                    game_id: parsedPlayerDetails.game_id,
+                    operator_id: parsedPlayerDetails.operatorId
+                });
             }, 4000);
         };
         const stmtObj = { lobby_id: matchId, user_id: userId, operator_id: parsedPlayerDetails.operatorId, bet_amount: totalBetAmount, win_amount: winAmt, user_bets: betResults, win_pos: resPos, color }
@@ -85,6 +85,9 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
 const betDataValidator = (betData: IReqData[]): { invalidBetPayload: number, totalBetAmount: number } => {
     let invalidBetPayload = 0;
     let totalBetAmount = 0;
+    if (!betData || !Array.isArray(betData) || betData.length <= 0 || betData.length > 10) {
+        return { invalidBetPayload: 1, totalBetAmount: 0 };
+    }
     betData.forEach((bet: IReqData) => {
         const convertedBetChip = bet.chip.split("-")
         const parsedChipsArr: number[] = []
@@ -141,14 +144,16 @@ const isWinner = (betData: IReqData[], resultPosition: number): { status: "WIN" 
     else return { status: "LOSS", winAmt: totalWinAmount, betResults, color }
 }
 
-/*Pay table to simplified:
+/*
+Pay table to simplified:
 Red, Black, Odd & Even : 2x
 Half Dozen : 2x
 Column: 3x
 Corner, Four: 3x
 Street, Three: 4x
 Split: 6x
-Straight Up: 12x */
+Straight Up: 12x 
+*/
 
 export const EPayouts: Record<string, { mult: number, min_bet: number, max_bet: number }> = {
     "0-2-4-6-8-10-12": { mult: 2, min_bet: 20, max_bet: 50000 },  // Even numbers payout
