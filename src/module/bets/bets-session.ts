@@ -85,7 +85,7 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
 const betDataValidator = (betData: IReqData[]): { invalidBetPayload: number, totalBetAmount: number } => {
     let invalidBetPayload = 0;
     let totalBetAmount = 0;
-    if (!betData || !Array.isArray(betData) || betData.length <= 0 || betData.length > 10) {
+    if (!betData || !Array.isArray(betData) || betData.length <= 0 || betData.length > 6) {
         return { invalidBetPayload: 1, totalBetAmount: 0 };
     }
     betData.forEach((bet: IReqData) => {
