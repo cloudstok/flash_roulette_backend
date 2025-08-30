@@ -4,7 +4,7 @@ import { getUserIP, logEventAndEmitResponse } from '../../utilities/helper-funct
 import { createLogger } from '../../utilities/logger';
 import { Socket } from 'socket.io';
 import { IBetResult, IBetsData, IPlayerDetails, IReqData } from '../../interfaces';
-import { randomUUID } from 'crypto';
+import { randomInt, randomUUID } from 'crypto';
 import { addSettlement } from './bets-db';
 const logger = createLogger('Bets', 'jsonl');
 
@@ -51,11 +51,10 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
             operator_id: parsedPlayerDetails.operatorId
         });
 
-        const resPos = Math.floor(Math.random() * 13);
-        // const resPos = 6;
+        const resPos = randomInt(0, 13);
         const { status, winAmt, betResults, color } = isWinner(betData, resPos)
-        if (status === "WIN") {
 
+        if (status === "WIN") {
             setTimeout(async () => {
                 const cdtTxn = await updateBalanceFromAccount({ ...debitObj, winning_amount: winAmt, txn_id: debitTxnId }, "CREDIT", playerDetailsForTxn);
                 if (!cdtTxn) console.error("Credit Txn Failed", JSON.stringify(debitObj));
@@ -85,7 +84,7 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
 const betDataValidator = (betData: IReqData[]): { invalidBetPayload: number, totalBetAmount: number } => {
     let invalidBetPayload = 0;
     let totalBetAmount = 0;
-    if (!betData || !Array.isArray(betData) || betData.length <= 0 || betData.length > 6) {
+    if (!betData || !Array.isArray(betData) || betData.length <= 0) {
         return { invalidBetPayload: 1, totalBetAmount: 0 };
     }
     betData.forEach((bet: IReqData) => {
