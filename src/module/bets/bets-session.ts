@@ -51,7 +51,7 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
             operator_id: parsedPlayerDetails.operatorId
         });
 
-        const resPos = randomInt(0, 13);
+        const resPos = Math.floor(Math.random() * 13);
         const { status, winAmt, betResults, color } = isWinner(betData, resPos)
 
         if (status === "WIN") {
@@ -84,7 +84,7 @@ export const placeBet = async (socket: Socket, betData: IReqData[]) => {
 const betDataValidator = (betData: IReqData[]): { invalidBetPayload: number, totalBetAmount: number } => {
     let invalidBetPayload = 0;
     let totalBetAmount = 0;
-    if (!betData || !Array.isArray(betData) || betData.length <= 0) {
+    if (!betData || !Array.isArray(betData) || betData.length <= 0 || betData.length > 6) {
         return { invalidBetPayload: 1, totalBetAmount: 0 };
     }
     betData.forEach((bet: IReqData) => {
